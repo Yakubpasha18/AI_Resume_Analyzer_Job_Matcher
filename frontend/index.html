@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Resume Analyzer</title>
+<style>
+body{font-family:Arial,sans-serif;margin:0;background:#f4f6f8;color:#17202a}
+.container{max-width:1100px;margin:35px auto;padding:0 20px}
+.card{background:white;padding:22px;border-radius:12px;margin:16px 0;box-shadow:0 2px 12px rgba(0,0,0,.07)}
+h1{margin-bottom:5px}.muted{color:#64748b}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+textarea{width:100%;height:230px;padding:12px;box-sizing:border-box;border:1px solid #cbd5e1;border-radius:8px}
+button{padding:12px 20px;border:0;border-radius:8px;cursor:pointer;font-weight:bold}
+button:hover{opacity:.9}
+.metric{font-size:38px;font-weight:bold}
+.tags span{display:inline-block;padding:6px 10px;margin:4px;border-radius:15px;background:#e2e8f0}
+.error{color:#b91c1c}
+@media(max-width:750px){.grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="card">
+    <h1>🤖 AI Resume Analyzer & Job Matcher</h1>
+    <p class="muted">Compare a resume with a job description using explainable skill matching.</p>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Resume</h3>
+      <textarea id="resume" placeholder="Paste your resume text here..."></textarea>
+    </div>
+    <div class="card">
+      <h3>Job Description</h3>
+      <textarea id="job" placeholder="Paste the job description here..."></textarea>
+    </div>
+  </div>
+
+  <div class="card">
+    <button onclick="analyze()">Analyze Resume</button>
+    <span id="status" class="muted"></span>
+  </div>
+
+  <div id="results"></div>
+</div>
+
+<script>
+async function analyze(){
+  const resume=document.getElementById("resume").value;
+  const job=document.getElementById("job").value;
+  const status=document.getElementById("status");
+  const results=document.getElementById("results");
+
+  if(resume.length<20 || job.length<20){
+    status.innerHTML='<span class="error">Please provide both texts.</span>';
+    return;
+  }
+
+  status.textContent=" Analyzing...";
+  results.innerHTML="";
+
+  try{
+    const r=await fetch("http://127.0.0.1:8000/analyze",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({resume_text:resume,job_description:job})
+    });
+    const data=await r.json();
+    if(!r.ok) throw new Error(data.detail || "API error");
+
+    results.innerHTML=`
+      <div class="card">
+        <h2>Match Score</h2>
+        <div class="metric">${data.match_percentage}%</div>
+        <p class="muted">Based on skills explicitly detected in the job description.</p>
+      </div>
+      <div class="grid">
+        <div class="card"><h3>Matched Skills</h3><div class="tags">${tags(data.matched_skills)}</div></div>
+        <div class="card"><h3>Missing Skills</h3><div class="tags">${tags(data.missing_skills)}</div></div>
+      </div>
+      <div class="card"><h3>Detected Resume Skills</h3><div class="tags">${tags(data.resume_skills)}</div></div>
+      <div class="card"><h3>Interview Questions</h3><ol>${data.interview_questions.map(q=>`<li>${escapeHtml(q)}</li>`).join("")}</ol></div>
+    `;
+    status.textContent=" Done";
+  }catch(e){
+    status.innerHTML='<span class="error">'+escapeHtml(e.message)+'</span>';
+  }
+}
+function tags(arr){return arr.length?arr.map(x=>`<span>${escapeHtml(x)}</span>`).join(""):"<span>None detected</span>"}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+</script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+ALEX KUMAR
+EDUCATION
+B.Tech Computer Science Engineering
+
+SKILLS
+Python, SQL, Pandas, NumPy, FastAPI, Git, GitHub, Power BI, Machine Learning
+
+PROJECTS
+E-commerce analytics dashboard using Python, SQL and Power BI.
+Resume analyzer API using FastAPI and NLP.
+
+EXPERIENCE
+Built data cleaning and reporting workflows using Python and SQL.

@@ -1,0 +1,3 @@
+DATA ANALYST / PYTHON DEVELOPER
+We are looking for a candidate with Python, SQL, Pandas, Power BI, AWS, Docker and Git.
+Experience with data analysis, REST API development and machine learning is preferred.
